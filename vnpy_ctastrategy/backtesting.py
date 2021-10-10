@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Callable
+from typing import Callable, Optional
 from functools import lru_cache, partial
 import traceback
 
@@ -57,8 +57,8 @@ class BacktestingEngine:
 
         self.strategy_class = None
         self.strategy = None
-        self.tick: TickData
-        self.bar: BarData
+        self.tick: Optional[TickData] = None
+        self.bar: Optional[BarData] = None
         self.datetime = None
 
         self.interval = None
@@ -141,7 +141,7 @@ class BacktestingEngine:
         self.risk_free = risk_free
         self.annual_days = annual_days
 
-    def add_strategy(self, strategy_class: type, setting: dict):
+    def add_strategy(self, strategy_class, setting: dict):
         """"""
         self.strategy_class = strategy_class
         self.strategy = strategy_class(
@@ -621,9 +621,8 @@ class BacktestingEngine:
 
             # Check whether limit orders can be filled.
             long_cross = (
-                order.direction == Direction.LONG
-                and order.price >= long_cross_price
-                and long_cross_price > 0
+                    order.direction == Direction.LONG
+                    and order.price >= long_cross_price > 0
             )
 
             short_cross = (

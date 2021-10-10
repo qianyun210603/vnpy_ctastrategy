@@ -1,0 +1,7 @@
+vnpy
+enum34
+tzlocal
+numpy
+plotly
+pandas
+setuptools
