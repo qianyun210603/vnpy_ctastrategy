@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 
 from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
-from vnpy.trader.database import database_manager
+from vnpy.trader.database import get_database
 from vnpy.trader.object import OrderData, TradeData, BarData, TickData
 from vnpy.trader.utility import round_to
 from vnpy.trader.optimize import (
@@ -1046,7 +1046,9 @@ def load_bar_data(
     end: datetime
 ):
     """"""
-    return database_manager.load_bar_data(
+    database = get_database()
+
+    return database.load_bar_data(
         symbol, exchange, interval, start, end
     )
 
@@ -1059,7 +1061,9 @@ def load_tick_data(
     end: datetime
 ):
     """"""
-    return database_manager.load_tick_data(
+    database = get_database()
+
+    return database.load_tick_data(
         symbol, exchange, start, end
     )
 
