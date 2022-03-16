@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Callable, Optional
+from typing import Callable, List
 from functools import lru_cache, partial
 import traceback
 
@@ -57,8 +57,8 @@ class BacktestingEngine:
 
         self.strategy_class = None
         self.strategy = None
-        self.tick: Optional[TickData] = None
-        self.bar: Optional[BarData] = None
+        self.tick: TickData
+        self.bar: BarData
         self.datetime = None
 
         self.interval = None
@@ -765,15 +765,17 @@ class BacktestingEngine:
         interval: Interval,
         callback: Callable,
         use_database: bool
-    ):
+    ) -> List[BarData]:
         """"""
         self.days = days
         self.callback = callback
+        return []
 
-    def load_tick(self, vt_symbol: str, days: int, callback: Callable):
+    def load_tick(self, vt_symbol: str, days: int, callback: Callable) -> List[TickData]:
         """"""
         self.days = days
         self.callback = callback
+        return []
 
     def send_order(
         self,
