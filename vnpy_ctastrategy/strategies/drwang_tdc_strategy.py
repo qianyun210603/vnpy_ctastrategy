@@ -8,36 +8,68 @@ from vnpy_ctastrategy import (
     BarGenerator,
     ArrayManager,
 )
+import numpy as np
 
 
-class DoubleMaStrategy(CtaTemplate):
-    author = "用Python的交易员"
+class TDCCalculator:
+    pass
 
-    fast_window = 10
-    slow_window = 20
 
-    fast_ma0 = 0.0
-    fast_ma1 = 0.0
 
-    slow_ma0 = 0.0
-    slow_ma1 = 0.0
 
-    parameters = ["fast_window", "slow_window"]
-    variables = ["fast_ma0", "fast_ma1", "slow_ma0", "slow_ma1"]
+class DrWangTDCStrategy(CtaTemplate):
+    author = "Cui"
+
+    num_continious_bars = 6
+    num_confirmed_bars = 9
+    back_shift = 4
+    monitor_freq1 = 5
+    monitor_freq2 = 15
+
+    tdc_freq1 = -1000000
+    tdc_freq2 = -1000000
+
+    parameters = ["num_continious_bars", "num_confirmed_bars", "back_shift", "monitor_freq1", "monitor_freq2"]
+    variables = ["tdc_freq1", "tdc_freq2"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
         super().__init__(cta_engine, strategy_name, vt_symbol, setting)
 
+        assert self.monitor_freq1 > self.monitor_freq2, "monitor_freq1 should be larger than monitor_freq2"
+        assert self.monitor_freq1 % self.monitor_freq2 == 0, "monitor_freq1 should be a multiple of monitor_freq2"
+
+
         self.bg = BarGenerator(self.on_bar)
-        self.am = ArrayManager()
+        self.bg1 = BarGenerator(self.on_bar, self.monitor_freq1, self.on_freq1_bar)
+        if self.monitor_freq2 == 1:
+            self.bg2 = self.bg
+        else:
+            self.bg2 = BarGenerator(self.on_bar, self.monitor_freq2, self.on_freq2_bar)
+        _size_am2 = self.monitor_freq2//self.monitor_freq1*300
+        self.ams = (ArrayManager(size=300), ArrayManager(size=_size_am2))
+        self.tdc_arraies = (np.zeros(300), np.zeros(_size_am2))
+        self.ns_setup_phases = (np.zeros(300), np.zeros(_size_am2))
+        self.ns_num_long_countdowns = (np.ones(300)*1000, np.ones(_size_am2)*1000)
+        self.ns_num_short_countdowns = (np.ones(300)*1000, np.ones(_size_am2)*1000)
+        self.ns_prev_count_close = (np.zeros(300), np.zeros(_size_am2))
+        self.ns_sline = (np.zeros(300), np.zeros(_size_am2))
+        self.ns_bline = (np.zeros(300), np.zeros(_size_am2))
+
+
+
+    def on_freq1_bar(self, bar: BarData):
+        pass
+
+    def on_freq2_bar(self, bar: BarData):
+        pass
 
     def on_init(self):
         """
         Callback when strategy is inited.
         """
         self.write_log("策略初始化")
-        self.load_bar(10)
+        self.load_bar(1000)
 
     def on_start(self):
         """
@@ -94,6 +126,9 @@ class DoubleMaStrategy(CtaTemplate):
             elif self.pos > 0:
                 self.sell(bar.close_price, 1)
                 self.short(bar.close_price, 1)
+
+        if self.monitor_freq2 == 1:
+            self.on_freq2_bar(bar)
 
         self.put_event()
 
